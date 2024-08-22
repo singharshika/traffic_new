@@ -71,13 +71,13 @@ def draw_detections(p1, p2, p3, img):
             
         draw.rectangle([x1, y1, x2, y2], outline=label_color, width=2)
 
-        label = f"{class_name} ({confidence:.2f})"
-        draw.text(label_position,label, fill='white')
+        label = f"{class_name} ({confidence:.2f})"  # This line was causing the syntax error
+        draw.text(label_position, label, fill='white') 
 
     return img
 
 # Roboflow API keys
-roboflow_api_key = config("ROBOFLOW_API_KEY")
+roboflow_api_key = config("ROBOFLOW_API_KEY", default="8z59WMd6szg9jPiS3k08")
 
 # Initialize Roboflow instances
 rf = Roboflow(api_key=roboflow_api_key)
@@ -104,9 +104,10 @@ total_frames = int(cap.get(7))
 current_date = datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=5, minutes=30))).strftime("%d-%m-%Y")
 folder_path = os.path.join(os.getcwd(), f"Violations/{current_date}")
 os.makedirs(folder_path, exist_ok=True)
+print(total_frames)
 
 # Process every 60th frame
-for frame_number in tqdm(range(0, total_frames, 180), desc="Processing frames", unit="frames"):
+for frame_number in tqdm(range(0, total_frames, 1), desc="Processing frames", unit="frames"):
     ret, frame = cap.read()
     if not ret:
         break
@@ -118,7 +119,6 @@ for frame_number in tqdm(range(0, total_frames, 180), desc="Processing frames", 
 
     r1 = m1.predict(image_path, confidence=40, overlap=40)
     pred1 = r1.json()['predictions']
-
     for pr1 in pred1:
         helmet_detected = False
         face_detected = False
@@ -198,7 +198,7 @@ for frame_number in tqdm(range(0, total_frames, 180), desc="Processing frames", 
 
             if num_faces_detected > 0:
                 face_detected = True
-
+            print(num_faces_detected)
             # Helmet check
             for helmet_prediction in pred1:
                 if helmet_prediction['class'] == 'helmet':
@@ -224,6 +224,7 @@ for frame_number in tqdm(range(0, total_frames, 180), desc="Processing frames", 
                 if rear_detected:
                     violation_names.append('wrong_lane')
                 if more_than_two_detected:
+                    print("triple riding")
                     violation_names.append('triple_riding')
 
                 timestamp = datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=5, minutes=30))).strftime("%d-%m-%Y %H %M %S")
